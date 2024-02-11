@@ -1,0 +1,219 @@
+
+create table lap_tb(
+id serial,
+save_name varchar(255),
+circuit_name varchar(255),
+lap_num integer,
+start_time timestamp default now(),
+final_time timestamp,
+updated_by varchar(255),
+updated_at timestamp default now(),
+primary key (id)
+)
+
+create table engine_tb(
+id serial,
+name_engine text,
+volume float,
+cylinders integer,
+power_value float,
+torque_value float,
+image text,
+manufacturer varchar(255),
+manufacture_year date,
+updated_by text,
+updated_at timestamp default now(),
+primary key (id)
+)
+
+create table sensor_tb(
+id serial,
+name_sensor text,
+updated_by text,
+updated_at timestamp default now(),
+primary key (id)
+)
+
+create table data_tb(
+id serial,
+lap_id integer,
+driver_id integer,
+engine_id integer,
+sensor_id integer,
+value float,
+updated_by varchar(255),
+updated_at timestamp default now(),
+primary key (id),
+foreign key (lap_id) references lap_tb (id),
+foreign key (driver_id) references driver_tb (id),
+foreign key (engine_id) references engine_tb (id),
+foreign key (sensor_id) references sensor_tb (id)
+)
+
+create table log_data_tb(
+id serial,
+change_id integer,
+old_data json,
+new_data json,
+updated_by text,
+updated_at timestamp default now(),
+primary key (id),
+foreign key (change_id) references data_tb (id)
+)
+
+insert
+	into
+	public.sensor_tb
+(id,
+	name_sensor,
+	updated_by,
+	updated_at)
+values(1,
+'throttle',
+'insert manual',
+'2024-02-11 16:21:30.918');
+
+insert
+	into
+	public.sensor_tb
+(id,
+	name_sensor,
+	updated_by,
+	updated_at)
+values(2,
+'brake',
+'insert manual',
+'2024-02-11 16:21:30.918');
+
+insert
+	into
+	public.sensor_tb
+(id,
+	name_sensor,
+	updated_by,
+	updated_at)
+values(3,
+'temp_w',
+'insert manual',
+'2024-02-11 16:21:30.918');
+
+insert
+	into
+	public.sensor_tb
+(id,
+	name_sensor,
+	updated_by,
+	updated_at)
+values(4,
+'acel_x',
+'insert manual',
+'2024-02-11 16:21:30.918');
+
+insert
+	into
+	public.sensor_tb
+(id,
+	name_sensor,
+	updated_by,
+	updated_at)
+values(5,
+'acel_y',
+'insert manual',
+'2024-02-11 16:21:30.918');
+
+insert
+	into
+	public.sensor_tb
+(id,
+	name_sensor,
+	updated_by,
+	updated_at)
+values(6,
+'acel_z',
+'insert manual',
+'2024-02-11 16:21:30.918');
+
+insert
+	into
+	public.sensor_tb
+(id,
+	name_sensor,
+	updated_by,
+	updated_at)
+values(7,
+'rot_x',
+'insert manual',
+'2024-02-11 16:21:30.918');
+
+insert
+	into
+	public.sensor_tb
+(id,
+	name_sensor,
+	updated_by,
+	updated_at)
+values(8,
+'rot_y',
+'insert manual',
+'2024-02-11 16:21:30.918');
+
+insert
+	into
+	public.sensor_tb
+(id,
+	name_sensor,
+	updated_by,
+	updated_at)
+values(9,
+'rot_z',
+'insert manual',
+'2024-02-11 16:21:30.918');
+
+insert
+	into
+	public.sensor_tb
+(id,
+	name_sensor,
+	updated_by,
+	updated_at)
+values(99,
+'erro',
+'insert manual',
+'2024-02-11 16:21:30.918');
+
+
+
+--- função disparado no trigger log 
+CREATE OR REPLACE FUNCTION atualiza_log()
+RETURNS TRIGGER AS '
+BEGIN
+  INSERT INTO log_data_tb (change_id, old_data, new_data, created_by, created_at)
+  VALUES (
+    old.id,
+    jsonb_build_object(
+      ''lap_id'', old.lap_id,
+      ''driver_id'', old.driver_id,
+      ''engine_id'', old.engine_id,
+      ''sensor_id'', old.sensor_id,
+	  ''value'', old.value
+    ),
+    jsonb_build_object(
+      ''lap_id'', new.lap_id,
+      ''driver_id'', new.driver_id,
+      ''engine_id'', new.engine_id,
+      ''sensor_id'', new.sensor_id,
+	  ''value'', new.value
+    ),
+    ''trigger update'',
+    NOW()
+  );
+
+  RETURN NEW;
+END;
+' LANGUAGE plpgsql;
+
+-- trigger 
+CREATE TRIGGER trigger_atualiza_log
+AFTER UPDATE ON data_tb
+FOR EACH ROW
+EXECUTE FUNCTION atualiza_log();
