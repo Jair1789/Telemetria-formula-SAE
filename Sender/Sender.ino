@@ -13,7 +13,7 @@
 #define RST_PIN 14   // Pin do ESP32 conectado ao pino RST do módulo LoRa
 #define DI0_PIN 26   // Pin do ESP32 conectado ao pino DIO0 do módulo LoRa
 #define PIN_CALIBRATE 12
-#define MAX_SAMPLES 100
+#define MAX_SAMPLES 20
 
 
 
